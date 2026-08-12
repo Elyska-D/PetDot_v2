@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Pet·Dot</title>
+<style>
+  :root{
+    --bg:#000;--surface:#0c0c0c;--surface-2:#141414;--line:#242424;--line-soft:#1a1a1a;
+    --ink:#fff;--ink-2:#8a8a8a;--ink-3:#565656;--red:#d61f26;--red-dim:#3a1113;
+    --radius:14px;--mono:"SFMono-Regular",ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{font-family:var(--mono);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
+    padding-bottom:104px;background-image:radial-gradient(var(--line-soft) 1px,transparent 1px);
+    background-size:22px 22px;background-position:-1px -1px;}
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px;}
+  .dotlead{flex:1;border-bottom:1px dotted var(--line);margin:0 8px 4px;height:1px;}
+  .mono-num{font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+  h1,h2,h3{font-weight:600;margin:0;}
+  button{font-family:var(--mono);cursor:pointer;color:inherit;}
+  input,select,textarea{font-family:var(--mono);}
+
+  header{position:sticky;top:0;z-index:40;background:linear-gradient(#000 74%,rgba(0,0,0,0));padding:18px 0 10px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .cross{width:16px;height:16px;}
+  .brand h1{font-size:15px;letter-spacing:.5em;text-transform:uppercase;}
+  .brand .sub{margin-left:auto;font-size:10px;letter-spacing:.28em;color:var(--ink-3);text-transform:uppercase;}
+
+  .sec-title{display:flex;align-items:flex-end;margin:26px 0 14px;}
+  .sec-title .t{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-2);}
+  .sec-title .n{font-size:11px;color:var(--ink-3);letter-spacing:.2em;}
+
+  .widget{border:1px solid var(--line);border-radius:var(--radius);
+    background:radial-gradient(circle at 12px 12px,#101010 0 60%,transparent 61%) 0 0/24px 24px,var(--surface);overflow:hidden;}
+  .widget-head{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px dotted var(--line);}
+  .widget-head .lbl{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-2);}
+  .widget-head .win{margin-left:auto;font-size:10px;letter-spacing:.2em;color:var(--red);}
+  .cfg-btn{background:transparent;border:1px solid var(--line);border-radius:8px;width:30px;height:26px;display:grid;place-items:center;color:var(--ink-2);}
+  .cfg-btn:active{border-color:var(--red);color:var(--red);}
+  .rem-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px dotted var(--line-soft);}
+  .rem-row:last-child{border-bottom:0;}
+  .rem-ico{flex:0 0 auto;}
+  .rem-body{min-width:0;flex:1;}
+  .rem-when{font-size:11px;letter-spacing:.06em;color:var(--ink);text-transform:capitalize;}
+  .rem-what{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:2px;}
+  .rem-what b{color:var(--ink-2);font-weight:600;}
+  .rem-badge{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:20px;border:1px solid var(--line);color:var(--ink-3);white-space:nowrap;}
+  .rem-badge.overdue{color:var(--red);border-color:var(--red);background:var(--red-dim);}
+  .rem-badge.soon{color:#e9c74a;border-color:#4a3f16;}
+  .rem-done{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;color:var(--ink-3);}
+  .rem-done:active{border-color:var(--red);color:var(--red);}
+  .empty{padding:26px 16px;text-align:center;color:var(--ink-3);font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
+  .empty .big{display:block;color:var(--ink-2);font-size:13px;margin-bottom:6px;letter-spacing:.2em;}
+
+  .pet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .pet-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 14px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;}
+  .pet-card::after{content:"";position:absolute;inset:auto -30px -30px auto;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,var(--halo,transparent) 0 40%,transparent 41%);opacity:.10;}
+  .pet-card:active{border-color:var(--ink-3);}
+  .pet-card .name{font-size:13px;letter-spacing:.12em;text-transform:uppercase;}
+  .pet-card .meta{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);}
+  .pet-card .agerow{display:flex;align-items:baseline;gap:6px;}
+  .pet-card .age{font-size:20px;letter-spacing:.02em;}
+  .pet-card .age small{font-size:9px;color:var(--ink-3);letter-spacing:.18em;}
+  .card-add{border:1px dashed var(--line);background:transparent;border-radius:var(--radius);min-height:118px;display:grid;place-items:center;color:var(--ink-3);font-size:11px;letter-spacing:.2em;text-transform:uppercase;}
+  .card-add:active{border-color:var(--red);color:var(--red);}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;}
+  .chip{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:20px;border:1px solid var(--line);color:var(--ink-3);}
+  .chip.hot{color:var(--red);border-color:var(--red);}
+
+  .sheet-scrim{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:60;opacity:0;pointer-events:none;transition:opacity .18s;}
+  .sheet-scrim.on{opacity:1;pointer-events:auto;}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:520px;margin:0 auto;max-height:92vh;overflow-y:auto;background:var(--bg);border-top-left-radius:20px;border-top-right-radius:20px;border:1px solid var(--line);border-bottom:0;transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);padding:8px 16px 40px;}
+  .sheet.on{transform:translateY(0);}
+  .grab{width:38px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 12px;}
+  .det-head{display:flex;align-items:center;gap:14px;margin:6px 0 4px;}
+  .det-head .id{flex:1;min-width:0;}
+  .det-head .id .nm{font-size:17px;letter-spacing:.16em;text-transform:uppercase;}
+  .det-head .id .br{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:4px;}
+  .icon-x{background:transparent;border:1px solid var(--line);border-radius:9px;width:34px;height:30px;color:var(--ink-2);display:grid;place-items:center;}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px;}
+  .stat{border:1px solid var(--line);border-radius:10px;padding:11px 10px;background:var(--surface);}
+  .stat .k{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
+  .stat .v{font-size:16px;margin-top:4px;letter-spacing:.02em;}
+  .stat .v small{font-size:9px;color:var(--ink-3);letter-spacing:.14em;}
+  .block{margin-top:22px;}
+  .block-h{display:flex;align-items:center;margin-bottom:10px;}
+  .block-h .t{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-2);}
+  .mini-add{margin-left:auto;background:transparent;border:1px solid var(--line);border-radius:7px;color:var(--ink-2);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;}
+  .mini-add:active{border-color:var(--red);color:var(--red);}
+  .treat{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 13px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .treat .tl{min-width:0;flex:1;}
+  .treat .tl .nm{font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+  .treat .tl .dt{font-size:10px;letter-spacing:.08em;color:var(--ink-3);margin-top:3px;text-transform:capitalize;}
+  .treat .nx{text-align:right;}
+  .treat .nx .lab{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
+  .treat .nx .val{font-size:11px;margin-top:2px;letter-spacing:.04em;text-transform:capitalize;}
+  .treat .nx .val.over{color:var(--red);}
+  .treat .nx .val.soon{color:#e9c74a;}
+  .treat-actions{display:flex;gap:6px;margin-top:2px;}
+  .tiny{background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--ink-3);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;}
+  .tiny:active{border-color:var(--red);color:var(--red);}
+  .tiny.done{color:var(--ink);border-color:var(--ink-3);}
+  .chart-wrap{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 10px 6px;}
+  .chart-tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .ctab{flex:1;background:transparent;border:1px solid var(--line);border-radius:7px;color:var(--ink-3);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:7px 0;}
+  .ctab.on{color:var(--ink);border-color:var(--red);background:var(--red-dim);}
+  svg.chart{width:100%;display:block;}
+  .chart-empty{padding:24px 8px;text-align:center;color:var(--ink-3);font-size:10px;letter-spacing:.16em;text-transform:uppercase;}
+  .log-line{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.06em;color:var(--ink-3);padding:6px 2px;border-bottom:1px dotted var(--line-soft);text-transform:capitalize;}
+  .log-line:last-child{border-bottom:0;}
+  .log-line b{color:var(--ink-2);font-weight:600;}
+  .danger{margin-top:26px;width:100%;background:transparent;border:1px solid var(--red-dim);color:var(--red);border-radius:10px;padding:12px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;}
+  .danger:active{background:var(--red-dim);}
+
+  .modal-scrim{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:70;opacity:0;pointer-events:none;transition:opacity .18s;display:flex;align-items:flex-end;}
+  .modal-scrim.on{opacity:1;pointer-events:auto;}
+  .modal{width:100%;max-width:520px;margin:0 auto;max-height:94vh;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-top-left-radius:20px;border-top-right-radius:20px;padding:8px 18px 34px;transform:translateY(103%);transition:transform .26s cubic-bezier(.2,.8,.2,1);}
+  .modal-scrim.on .modal{transform:translateY(0);}
+  .modal h2{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-2);margin:8px 0 18px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px;}
+  .field input,.field select,.field textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:11px 12px;font-size:14px;letter-spacing:.02em;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--red);}
+  .field.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink-3);padding:12px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .seg button.on{border-color:var(--red);color:var(--ink);background:var(--red-dim);}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap;}
+  .sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);position:relative;}
+  .sw.on{border-color:var(--ink);}
+  .sw.on::after{content:"";position:absolute;inset:-6px;border:1px dotted var(--ink-3);border-radius:50%;}
+  .btn-primary{width:100%;background:var(--red);border:none;color:#fff;border-radius:10px;padding:15px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:600;margin-top:8px;}
+  .btn-primary:active{filter:brightness(.85);}
+  .btn-ghost{width:100%;background:transparent;border:1px solid var(--line);color:var(--ink-2);border-radius:10px;padding:13px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-top:10px;}
+  .cfg-group{margin-bottom:18px;}
+  .cfg-group .gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px;}
+  .toggle-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dotted var(--line-soft);}
+  .toggle-row:last-child{border-bottom:0;}
+  .toggle-row .tt{flex:1;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);}
+  .switch{width:42px;height:24px;border-radius:20px;border:1px solid var(--line);background:var(--surface);position:relative;transition:.15s;}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink-3);transition:.15s;}
+  .switch.on{border-color:var(--red);background:var(--red-dim);}
+  .switch.on::after{left:20px;background:var(--red);}
+
+  .data-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px;margin-bottom:14px;}
+  .data-card .dh{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px;}
+  .data-card p{font-size:11px;color:var(--ink-3);letter-spacing:.03em;line-height:1.6;margin:0 0 14px;}
+  .data-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .data-actions button{flex:1;min-width:120px;border:1px solid var(--line);background:transparent;border-radius:9px;color:var(--ink-2);padding:12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;}
+  .data-actions button.accent{border-color:var(--red);color:var(--red);}
+  .data-actions button:active{background:var(--surface-2);}
+  textarea.backup{height:120px;resize:vertical;font-size:11px;margin-top:12px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:11px 12px;outline:none;}
+  .hintok{font-size:10px;letter-spacing:.1em;color:#57c07a;margin-top:8px;text-transform:uppercase;}
+  .hintko{font-size:10px;letter-spacing:.1em;color:var(--red);margin-top:8px;text-transform:uppercase;}
+
+  .onb{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:32px 24px;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .onb.on{opacity:1;pointer-events:auto;}
+  .onb .logo{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:40px;}
+  .onb .logo .mark{width:64px;height:64px;border:1px solid var(--line);border-radius:18px;display:grid;place-items:center;background:var(--surface);}
+  .onb .logo h1{font-size:18px;letter-spacing:.55em;text-transform:uppercase;}
+  .onb .logo p{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);margin:0;}
+  .onb .q{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);text-align:center;margin-bottom:18px;}
+  .onb-choice{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;text-align:left;width:100%;}
+  .onb-choice:active{border-color:var(--red);}
+  .onb-choice .ic{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;color:var(--red);flex:0 0 auto;}
+  .onb-choice .tx b{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;}
+  .onb-choice .tx span{font-size:10px;letter-spacing:.06em;color:var(--ink-3);}
+
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:linear-gradient(rgba(0,0,0,0),#000 34%);padding:14px 16px 20px;}
+  .nav-inner{max-width:520px;margin:0 auto;display:flex;gap:8px;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:6px;}
+  .nav-inner button{flex:1;background:transparent;border:none;border-radius:11px;color:var(--ink-3);padding:11px 0;font-size:10px;letter-spacing:.18em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .nav-inner button.on{color:var(--ink);background:var(--surface-2);}
+  .nav-inner button.on .nd{background:var(--red);box-shadow:0 0 0 3px rgba(214,31,38,.2);}
+  .nd{width:6px;height:6px;border-radius:50%;background:var(--ink-3);}
+  .hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap brand">
+    <svg class="cross" viewBox="0 0 24 24"><rect x="9.5" y="3" width="5" height="18" rx="1.4" fill="#d61f26"/><rect x="3" y="9.5" width="18" height="5" rx="1.4" fill="#d61f26"/></svg>
+    <h1>Pet·Dot</h1>
+    <span class="sub" id="today-lbl"></span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="view-home">
+    <div class="sec-title"><span class="t">Widget rappels</span><span class="dotlead"></span><span class="n" id="rem-count">00</span></div>
+    <div class="widget">
+      <div class="widget-head">
+        <span class="lbl">À venir</span><span class="win" id="win-lbl">14 JOURS</span>
+        <button class="cfg-btn" id="open-cfg" aria-label="Configurer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+        </button>
+      </div>
+      <div id="rem-list"></div>
+    </div>
+    <div class="sec-title" style="margin-top:30px"><span class="t">Comment ça marche</span><span class="dotlead"></span></div>
+    <p style="font-size:11px;letter-spacing:.05em;color:var(--ink-3);line-height:1.7;margin:0 2px">
+      Chaque animal a des traitements avec une <b style="color:var(--ink-2)">fréquence de renouvellement</b>. Le widget calcule la prochaine échéance et affiche ce qui tombe dans la fenêtre choisie. Touchez ✓ pour marquer un rappel comme fait.</p>
+  </section>
+
+  <section id="view-pets" class="hidden">
+    <div class="sec-title"><span class="t">Mes animaux</span><span class="dotlead"></span><span class="n" id="pet-count">00</span></div>
+    <div class="pet-grid" id="pet-grid"></div>
+  </section>
+
+  <section id="view-data" class="hidden">
+    <div class="sec-title"><span class="t">Mes données</span><span class="dotlead"></span></div>
+    <div class="data-card">
+      <div class="dh">Sauvegarder</div>
+      <p>Tes données restent sur cet appareil. Fais une sauvegarde pour les garder au sûr ou les transférer sur un autre téléphone : enregistre le fichier où tu veux (Drive, e-mail, Fichiers…).</p>
+      <div class="data-actions">
+        <button id="exp-copy" class="accent">Copier</button>
+        <button id="exp-file">Télécharger .json</button>
+        <button id="exp-share">Partager</button>
+      </div>
+      <textarea class="backup" id="exp-text" readonly></textarea>
+      <div id="exp-msg"></div>
+    </div>
+    <div class="data-card">
+      <div class="dh">Restaurer / Importer</div>
+      <p>Recharge une sauvegarde. ⚠️ Cela remplace les données actuelles de l'appareil.</p>
+      <div class="data-actions">
+        <button id="imp-file" class="accent">Importer un fichier</button>
+        <button id="imp-text-btn">Coller un texte</button>
+      </div>
+      <textarea class="backup hidden" id="imp-text" placeholder="Colle ici le contenu d'une sauvegarde puis touche Restaurer"></textarea>
+      <button id="imp-text-do" class="btn-ghost hidden">Restaurer depuis le texte</button>
+      <div id="imp-msg"></div>
+      <input type="file" id="imp-input" accept="application/json,.json" class="hidden">
+    </div>
+  </section>
+
+</main>
+
+<div class="sheet-scrim" id="detail-scrim"><div class="sheet" id="detail-sheet"></div></div>
+<div class="modal-scrim" id="modal-scrim"><div class="modal" id="modal"></div></div>
+
+<div class="onb" id="onb">
+  <div class="logo">
+    <div class="mark"><svg width="30" height="30" viewBox="0 0 24 24"><rect x="9.5" y="3" width="5" height="18" rx="1.4" fill="#d61f26"/><rect x="3" y="9.5" width="18" height="5" rx="1.4" fill="#d61f26"/></svg></div>
+    <h1>Pet·Dot</h1><p>Suivi santé animalier</p>
+  </div>
+  <div class="q">Où veux-tu enregistrer tes données ?</div>
+  <button class="onb-choice" id="onb-new">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span>
+    <span class="tx"><b>Nouveau</b><span>Démarrer sur cet appareil</span></span>
+  </button>
+  <button class="onb-choice" id="onb-import">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+    <span class="tx"><b>Importer</b><span>Restaurer une sauvegarde existante</span></span>
+  </button>
+  <input type="file" id="onb-file" accept="application/json,.json" class="hidden">
+  <div id="onb-msg" style="text-align:center;margin-top:6px"></div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <button data-nav="home" class="on"><span class="nd"></span>Rappels</button>
+    <button data-nav="pets"><span class="nd"></span>Animaux</button>
+    <button data-nav="data"><span class="nd"></span>Données</button>
+  </div>
+</nav>
+
+<script>
+const Store = (() => {
+  const KEY="petdot:v2";
+  const hasWin = typeof window!=="undefined" && window.storage && typeof window.storage.get==="function";
+  let mem=null;
+  return {
+    async load(){
+      if(hasWin){ try{ const r=await window.storage.get(KEY); return r&&r.value?JSON.parse(r.value):null; }catch(e){ return null; } }
+      try{ const raw=localStorage.getItem(KEY); return raw?JSON.parse(raw):null; }catch(e){ return mem; }
+    },
+    async save(d){
+      const s=JSON.stringify(d);
+      if(hasWin){ try{ await window.storage.set(KEY,s,false);}catch(e){} return; }
+      try{ localStorage.setItem(KEY,s);}catch(e){ mem=d; }
+    }
+  };
+})();
+
+const uid=()=>Math.random().toString(36).slice(2,9);
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+const TREAT_TYPES={vaccine:{label:"Vaccin",defFreq:12,defUnit:"mois"},vermifuge:{label:"Vermifuge",defFreq:3,defUnit:"mois"},antipuce:{label:"Antipuce",defFreq:1,defUnit:"mois"},custom:{label:"Rappel",defFreq:1,defUnit:"mois"}};
+const COLORS=["#d61f26","#e8873a","#e9c74a","#57c07a","#3aa0e6","#8b6cf0","#e56ba8","#ffffff"];
+const DEF_WIDGET=()=>({window:14,types:{vaccine:true,vermifuge:true,antipuce:true,custom:true},pets:"all"});
+
+let DB={__init:false,pets:[],widget:DEF_WIDGET()};
+
+function seedLoki(){
+  return {id:uid(),name:"Loki",type:"dog",color:"#8b6cf0",breed:"Eurasier · Mâle",
+    birthDate:"2026-06-06",adoptionDate:"2026-08-08",
+    weights:[{date:"2026-06-06",v:0.4},{date:"2026-07-06",v:2.1},{date:"2026-08-08",v:4.3}],
+    sizes:[{date:"2026-07-06",v:18},{date:"2026-08-08",v:26}],
+    treatments:[{id:uid(),type:"vaccine",label:"Vaccin",last:"2026-07-20",freq:1,unit:"ans"},
+      {id:uid(),type:"vermifuge",label:"Vermifuge",last:"2026-08-01",freq:3,unit:"mois"},
+      {id:uid(),type:"antipuce",label:"Antipuce",last:"2026-08-08",freq:1,unit:"mois"}]};
+}
+
+const JOURS=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+const MOIS=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const parseD=s=>{const d=new Date(s+"T00:00:00");d.setHours(0,0,0,0);return d;};
+const fmtLong=d=>`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`;
+const fmtShort=d=>`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getFullYear()).slice(2)}`;
+const daysBetween=(a,b)=>Math.round((b-a)/86400000);
+function addInterval(s,val,unit){const d=parseD(s);if(unit==="jours")d.setDate(d.getDate()+val);else if(unit==="semaines")d.setDate(d.getDate()+val*7);else if(unit==="mois")d.setMonth(d.getMonth()+val);else if(unit==="ans")d.setFullYear(d.getFullYear()+val);d.setHours(0,0,0,0);return d;}
+function ageOf(b){const bd=parseD(b);let m=(TODAY.getFullYear()-bd.getFullYear())*12+(TODAY.getMonth()-bd.getMonth());if(TODAY.getDate()<bd.getDate())m--;if(m<0)return{v:"0",u:"jours"};if(m<1){const d=daysBetween(bd,TODAY);return{v:String(d),u:d>1?"jours":"jour"};}if(m<24)return{v:String(m),u:"mois"};const y=Math.floor(m/12),mm=m%12;return{v:String(y),u:mm?`ans ${mm}m`:(y>1?"ans":"an")};}
+function nextDue(t){if(!t.last||!t.freq)return null;return addInterval(t.last,Number(t.freq),t.unit);}
+function statusOf(d){const dd=daysBetween(TODAY,d);if(dd<0)return"over";if(dd<=3)return"soon";return"ok";}
+
+function petIcon(type,color,size){
+  const s=size||34;
+  if(type==="cat"){
+    return `<svg width="${s}" height="${s}" viewBox="0 0 48 48" fill="none">
+      <path d="M11 8l6 6h14l6-6 1 15c0 9-6 15-14 15S10 32 10 23z" fill="${color}"/>
+      <path d="M11 8l6 6-4 3zM37 8l-6 6 4 3z" fill="${color}" opacity=".55"/>
+      <circle cx="19" cy="22" r="2" fill="#000"/><circle cx="29" cy="22" r="2" fill="#000"/>
+      <path d="M24 27l-2 2h4z" fill="#000"/>
+      <path d="M24 29v3M18 30l-6 1M18 32l-6 3M30 30l6 1M30 32l6 3" stroke="#000" stroke-width="1.1" opacity=".6"/>
+    </svg>`;
+  }
+  return `<svg width="${s}" height="${s}" viewBox="0 0 48 48" fill="none">
+    <path d="M13 12c-3 0-5 3-5 8v6c0 8 7 12 16 12s16-4 16-12v-6c0-5-2-8-5-8-2 0-3 2-4 4-2-1-4-1.5-7-1.5S19 15 17 16c-1-2-2-4-4-4z" fill="${color}"/>
+    <path d="M9 15c-2 1-3 5-2 9l4-2zM39 15c2 1 3 5 2 9l-4-2z" fill="${color}" opacity=".55"/>
+    <circle cx="19" cy="24" r="2" fill="#000"/><circle cx="29" cy="24" r="2" fill="#000"/>
+    <ellipse cx="24" cy="30" rx="3" ry="2.2" fill="#000"/>
+    <path d="M24 32v3" stroke="#000" stroke-width="1.2" opacity=".6"/>
+  </svg>`;
+}
+
+function collectReminders(){const w=DB.widget;const out=[];
+  DB.pets.forEach(p=>{if(w.pets!=="all"&&Array.isArray(w.pets)&&!w.pets.includes(p.id))return;
+    p.treatments.forEach(t=>{const kind=TREAT_TYPES[t.type]?t.type:"custom";if(!w.types[kind])return;
+      const nd=nextDue(t);if(!nd)return;const dd=daysBetween(TODAY,nd);if(dd>w.window)return;
+      out.push({pet:p,treat:t,date:nd,dd,status:statusOf(nd)});});});
+  out.sort((a,b)=>a.date-b.date);return out;}
+function renderWidget(){
+  document.getElementById("win-lbl").textContent=DB.widget.window+" JOURS";
+  const list=document.getElementById("rem-list");const rems=collectReminders();
+  document.getElementById("rem-count").textContent=String(rems.length).padStart(2,"0");
+  if(!rems.length){list.innerHTML=`<div class="empty"><span class="big">— Rien à prévoir —</span>Aucun rappel dans les ${DB.widget.window} prochains jours</div>`;return;}
+  list.innerHTML=rems.map(r=>{const overdue=r.status==="over";
+    const badge=overdue?`<span class="rem-badge overdue">En retard</span>`:(r.dd===0?`<span class="rem-badge soon">Aujourd'hui</span>`:`<span class="rem-badge${r.status==="soon"?" soon":""}">J−${r.dd}</span>`);
+    return `<div class="rem-row"><span class="rem-ico">${petIcon(r.pet.type,r.pet.color,30)}</span>
+      <div class="rem-body"><div class="rem-when">${fmtLong(r.date)}</div>
+      <div class="rem-what"><b>${(TREAT_TYPES[r.treat.type]||{}).label||r.treat.label}</b> · ${r.pet.name}</div></div>${badge}
+      <button class="rem-done" data-done="${r.pet.id}:${r.treat.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5 9-11"/></svg></button></div>`;}).join("");
+}
+
+function renderPets(){
+  document.getElementById("pet-count").textContent=String(DB.pets.length).padStart(2,"0");
+  const grid=document.getElementById("pet-grid");
+  grid.innerHTML=DB.pets.map(p=>{const a=ageOf(p.birthDate);const w=p.weights.length?p.weights[p.weights.length-1].v:null;
+    const chips=p.treatments.map(t=>{const nd=nextDue(t);if(!nd)return"";const st=statusOf(nd);const lab=(TREAT_TYPES[t.type]||{}).label||t.label;return `<span class="chip${st==="over"?" hot":""}">${lab.slice(0,4)}</span>`;}).join("");
+    return `<div class="pet-card" data-pet="${p.id}" style="--halo:${p.color}">${petIcon(p.type,p.color,38)}
+      <div><div class="name">${p.name}</div><div class="meta">${p.breed||(p.type==="cat"?"Chat":"Chien")}</div></div>
+      <div class="agerow"><span class="age mono-num">${a.v}</span><span class="age"><small>${a.u}</small></span>${w!==null?`<span style="margin-left:auto;font-size:11px;color:var(--ink-3)">${w}<small style="font-size:9px"> KG</small></span>`:""}</div>
+      <div class="chips">${chips||'<span class="chip">—</span>'}</div></div>`;}).join("")+`<button class="card-add" id="add-pet-btn">+ Nouvel animal</button>`;
+}
+
+let CHART_MODE="weight";
+function openDetail(id){const p=DB.pets.find(x=>x.id===id);if(!p)return;CHART_MODE="weight";renderDetail(p);
+  document.getElementById("detail-scrim").classList.add("on");requestAnimationFrame(()=>document.getElementById("detail-sheet").classList.add("on"));}
+function closeDetail(){document.getElementById("detail-sheet").classList.remove("on");setTimeout(()=>document.getElementById("detail-scrim").classList.remove("on"),200);}
+function renderDetail(p){const a=ageOf(p.birthDate);const w=p.weights.length?p.weights[p.weights.length-1].v:"—";const h=p.sizes.length?p.sizes[p.sizes.length-1].v:"—";
+  const treats=p.treatments.map(t=>{const nd=nextDue(t);const st=nd?statusOf(nd):"ok";const lab=(TREAT_TYPES[t.type]||{}).label||t.label;const stTxt=nd?(st==="over"?"En retard":fmtLong(nd)):"—";
+    return `<div class="treat"><div class="tl"><div class="nm">${lab}</div><div class="dt">Dernier · ${t.last?fmtShort(parseD(t.last)):"—"} · tous les ${t.freq} ${t.unit}</div>
+      <div class="treat-actions"><button class="tiny done" data-tdone="${t.id}">✓ Fait aujourd'hui</button><button class="tiny" data-tdel="${t.id}">Suppr.</button></div></div>
+      <div class="nx"><div class="lab">Prochain</div><div class="val ${st==="over"?"over":st==="soon"?"soon":""}">${stTxt}</div></div></div>`;}).join("");
+  document.getElementById("detail-sheet").innerHTML=`<div class="grab"></div>
+    <div class="det-head">${petIcon(p.type,p.color,46)}<div class="id"><div class="nm">${p.name}</div><div class="br">${p.breed||(p.type==="cat"?"Chat":"Chien")} · adopté ${p.adoptionDate?fmtShort(parseD(p.adoptionDate)):"—"}</div></div>
+      <button class="icon-x" data-edit-pet="${p.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>
+      <button class="icon-x" id="det-close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="stat-row"><div class="stat"><div class="k">Âge</div><div class="v mono-num">${a.v} <small>${a.u.toUpperCase()}</small></div></div>
+      <div class="stat"><div class="k">Poids</div><div class="v mono-num">${w} <small>KG</small></div></div>
+      <div class="stat"><div class="k">Taille</div><div class="v mono-num">${h} <small>CM</small></div></div></div>
+    <div class="block"><div class="block-h"><span class="t">Traitements & rappels</span><button class="mini-add" data-add-treat="${p.id}">+ Ajouter</button></div>
+      ${treats||'<div class="chart-empty">Aucun traitement enregistré</div>'}</div>
+    <div class="block"><div class="block-h"><span class="t">Courbe de progression</span><button class="mini-add" data-add-measure="${p.id}">+ Mesure</button></div>
+      <div class="chart-wrap"><div class="chart-tabs"><button class="ctab ${CHART_MODE==="weight"?"on":""}" data-cmode="weight">Poids · kg</button><button class="ctab ${CHART_MODE==="size"?"on":""}" data-cmode="size">Taille · cm</button></div>
+      <div id="chart-slot">${renderChart(p,CHART_MODE)}</div></div><div id="log-slot" style="margin-top:8px">${renderLog(p,CHART_MODE)}</div></div>
+    <button class="danger" data-del-pet="${p.id}">Supprimer la fiche</button>`;
+}
+function seriesOf(p,m){return(m==="weight"?p.weights:p.sizes).slice().sort((a,b)=>parseD(a.date)-parseD(b.date));}
+function renderChart(p,mode){const data=seriesOf(p,mode);if(!data.length)return`<div class="chart-empty">Aucune donnée — ajoutez une mesure</div>`;
+  const W=460,H=170,padL=30,padR=12,padT=14,padB=24;const xs=data.map(d=>parseD(d.date).getTime()),ys=data.map(d=>d.v);
+  const minX=Math.min(...xs),maxX=Math.max(...xs);let minY=Math.min(...ys),maxY=Math.max(...ys);if(minY===maxY){minY-=1;maxY+=1;}const pad=(maxY-minY)*.15;minY-=pad;maxY+=pad;
+  const px=t=>padL+(maxX===minX?.5:(t-minX)/(maxX-minX))*(W-padL-padR);const py=v=>padT+(1-(v-minY)/(maxY-minY))*(H-padT-padB);
+  let grid="";for(let i=0;i<=3;i++){const gy=padT+i*(H-padT-padB)/3;const val=maxY-i*(maxY-minY)/3;grid+=`<line x1="${padL}" y1="${gy}" x2="${W-padR}" y2="${gy}" stroke="#242424" stroke-width="1" stroke-dasharray="2 4"/><text x="4" y="${gy+3}" fill="#565656" font-size="9" font-family="monospace">${val.toFixed(val<10?1:0)}</text>`;}
+  const pts=data.map((d,i)=>[px(xs[i]),py(ys[i])]);const path=pts.map((pt,i)=>(i?"L":"M")+pt[0].toFixed(1)+" "+pt[1].toFixed(1)).join(" ");
+  const area=`M${pts[0][0]} ${H-padB} `+pts.map(pt=>"L"+pt[0].toFixed(1)+" "+pt[1].toFixed(1)).join(" ")+` L${pts[pts.length-1][0]} ${H-padB} Z`;
+  const dots=pts.map(pt=>`<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="3.2" fill="#000" stroke="${p.color}" stroke-width="2"/>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<path d="${area}" fill="${p.color}" opacity="0.08"/><path d="${path}" fill="none" stroke="${p.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
+    <text x="${padL}" y="${H-6}" fill="#565656" font-size="9" font-family="monospace">${fmtShort(parseD(data[0].date))}</text><text x="${W-padR}" y="${H-6}" fill="#565656" font-size="9" font-family="monospace" text-anchor="end">${fmtShort(parseD(data[data.length-1].date))}</text></svg>`;}
+function renderLog(p,mode){const data=seriesOf(p,mode).slice().reverse();const unit=mode==="weight"?"kg":"cm";if(!data.length)return"";return data.map(d=>`<div class="log-line"><span>${fmtLong(parseD(d.date))}</span><b>${d.v} ${unit}</b></div>`).join("");}
+
+function openModal(html){document.getElementById("modal").innerHTML=html;document.getElementById("modal-scrim").classList.add("on");}
+function closeModal(){document.getElementById("modal-scrim").classList.remove("on");}
+
+let FORM_TYPE="dog",FORM_COLOR=COLORS[0];
+function petForm(existing){
+  const p=existing||{name:"",type:"dog",color:COLORS[0],breed:"",birthDate:"",adoptionDate:""};
+  FORM_TYPE=p.type;FORM_COLOR=p.color;
+  openModal(`<div class="grab"></div><h2>${existing?"Modifier l'animal":"Nouvel animal"}</h2>
+    <div class="field"><label>Type</label><div class="seg" id="f-type">
+      <button data-t="dog" class="${p.type==="dog"?"on":""}">${petIcon("dog",p.type==="dog"?p.color:"#565656",22)} Chien</button>
+      <button data-t="cat" class="${p.type==="cat"?"on":""}">${petIcon("cat",p.type==="cat"?p.color:"#565656",22)} Chat</button></div></div>
+    <div class="field"><label>Couleur de l'icône</label><div class="swatches" id="f-color">
+      ${COLORS.map(c=>`<button class="sw ${c===p.color?"on":""}" data-c="${c}" style="background:${c}"></button>`).join("")}</div></div>
+    <div class="field"><label>Nom</label><input id="f-name" value="${p.name}" placeholder="Nom de l'animal"></div>
+    <div class="field"><label>Race / description</label><input id="f-breed" value="${p.breed||""}" placeholder="ex. Eurasier · Mâle"></div>
+    <div class="field split"><div><label>Naissance</label><input id="f-birth" type="date" value="${p.birthDate||""}"></div><div><label>Adoption</label><input id="f-adopt" type="date" value="${p.adoptionDate||""}"></div></div>
+    <button class="btn-primary" id="f-save">${existing?"Enregistrer":"Créer la fiche"}</button>
+    <button class="btn-ghost" id="f-cancel">Annuler</button>`);
+  document.getElementById("f-type").onclick=e=>{const b=e.target.closest("button[data-t]");if(!b)return;FORM_TYPE=b.dataset.t;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x.dataset.t===FORM_TYPE));
+    b.innerHTML=petIcon(FORM_TYPE,FORM_COLOR,22)+(FORM_TYPE==="dog"?" Chien":" Chat");};
+  document.getElementById("f-color").onclick=e=>{const b=e.target.closest("button[data-c]");if(!b)return;FORM_COLOR=b.dataset.c;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x.dataset.c===FORM_COLOR));
+    document.querySelectorAll("#f-type button.on").forEach(x=>x.innerHTML=petIcon(FORM_TYPE,FORM_COLOR,22)+(FORM_TYPE==="dog"?" Chien":" Chat"));};
+  document.getElementById("f-cancel").onclick=closeModal;
+  document.getElementById("f-save").onclick=async()=>{const name=document.getElementById("f-name").value.trim()||"Sans nom";
+    const rec={name,type:FORM_TYPE,color:FORM_COLOR,breed:document.getElementById("f-breed").value.trim(),
+      birthDate:document.getElementById("f-birth").value||TODAY.toISOString().slice(0,10),adoptionDate:document.getElementById("f-adopt").value||""};
+    if(existing)Object.assign(existing,rec);else DB.pets.push({id:uid(),...rec,weights:[],sizes:[],treatments:[]});
+    await persist();closeModal();renderPets();renderWidget();if(existing)renderDetail(existing);};
+}
+
+function treatForm(petId){const p=DB.pets.find(x=>x.id===petId);
+  const opt=Object.entries(TREAT_TYPES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+  openModal(`<div class="grab"></div><h2>Ajouter un traitement</h2>
+    <div class="field"><label>Type</label><select id="t-type">${opt}</select></div>
+    <div class="field hidden" id="t-custom-wrap"><label>Nom du rappel</label><input id="t-custom" placeholder="ex. Détartrage"></div>
+    <div class="field"><label>Date du dernier traitement</label><input id="t-last" type="date" value="${TODAY.toISOString().slice(0,10)}"></div>
+    <div class="field split"><div><label>Renouveler tous les</label><input id="t-freq" type="number" min="1" value="3"></div>
+      <div><label>Unité</label><select id="t-unit"><option value="jours">jours</option><option value="semaines">semaines</option><option value="mois" selected>mois</option><option value="ans">ans</option></select></div></div>
+    <button class="btn-primary" id="t-save">Ajouter</button><button class="btn-ghost" id="t-cancel">Annuler</button>`);
+  const def=()=>{const t=document.getElementById("t-type").value;document.getElementById("t-freq").value=TREAT_TYPES[t].defFreq;document.getElementById("t-unit").value=TREAT_TYPES[t].defUnit;document.getElementById("t-custom-wrap").classList.toggle("hidden",t!=="custom");};
+  document.getElementById("t-type").onchange=def;
+  document.getElementById("t-cancel").onclick=closeModal;
+  document.getElementById("t-save").onclick=async()=>{const type=document.getElementById("t-type").value;
+    const label=type==="custom"?(document.getElementById("t-custom").value.trim()||"Rappel"):TREAT_TYPES[type].label;
+    p.treatments.push({id:uid(),type,label,last:document.getElementById("t-last").value||TODAY.toISOString().slice(0,10),freq:Math.max(1,Number(document.getElementById("t-freq").value)||1),unit:document.getElementById("t-unit").value});
+    await persist();closeModal();renderDetail(p);renderWidget();renderPets();};
+}
+function measureForm(petId){const p=DB.pets.find(x=>x.id===petId);let MODE=CHART_MODE;
+  openModal(`<div class="grab"></div><h2>Nouvelle mesure</h2>
+    <div class="field"><label>Type</label><div class="seg" id="m-mode"><button data-m="weight" class="${MODE==="weight"?"on":""}">Poids · kg</button><button data-m="size" class="${MODE==="size"?"on":""}">Taille · cm</button></div></div>
+    <div class="field split"><div><label>Valeur</label><input id="m-val" type="number" step="0.1" min="0" placeholder="0.0"></div><div><label>Date</label><input id="m-date" type="date" value="${TODAY.toISOString().slice(0,10)}"></div></div>
+    <button class="btn-primary" id="m-save">Enregistrer</button><button class="btn-ghost" id="m-cancel">Annuler</button>`);
+  document.getElementById("m-mode").onclick=e=>{const b=e.target.closest("button[data-m]");if(!b)return;MODE=b.dataset.m;[...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x.dataset.m===MODE));};
+  document.getElementById("m-cancel").onclick=closeModal;
+  document.getElementById("m-save").onclick=async()=>{const v=Number(document.getElementById("m-val").value);if(!v||v<=0){document.getElementById("m-val").style.borderColor="var(--red)";return;}
+    (MODE==="weight"?p.weights:p.sizes).push({date:document.getElementById("m-date").value||TODAY.toISOString().slice(0,10),v});CHART_MODE=MODE;
+    await persist();closeModal();renderDetail(p);renderPets();};
+}
+function widgetConfig(){const w=DB.widget;const wins=[7,14,30];
+  const rows=Object.entries(TREAT_TYPES).map(([k,v])=>`<div class="toggle-row"><span class="tt">${v.label}</span><button class="switch ${w.types[k]?"on":""}" data-ttype="${k}"></button></div>`).join("");
+  openModal(`<div class="grab"></div><h2>Configurer le widget</h2>
+    <div class="cfg-group"><div class="gl">Fenêtre d'anticipation</div><div class="seg" id="c-win">${wins.map(n=>`<button data-win="${n}" class="${w.window===n?"on":""}">${n} jours</button>`).join("")}</div></div>
+    <div class="cfg-group"><div class="gl">Types de rappels affichés</div>${rows}</div>
+    <button class="btn-primary" id="c-done">Terminé</button>`);
+  document.getElementById("c-win").onclick=e=>{const b=e.target.closest("button[data-win]");if(!b)return;DB.widget.window=Number(b.dataset.win);[...e.currentTarget.children].forEach(x=>x.classList.toggle("on",Number(x.dataset.win)===DB.widget.window));};
+  document.getElementById("modal").querySelectorAll("[data-ttype]").forEach(btn=>{btn.onclick=()=>{const k=btn.dataset.ttype;DB.widget.types[k]=!DB.widget.types[k];btn.classList.toggle("on",DB.widget.types[k]);};});
+  document.getElementById("c-done").onclick=async()=>{await persist();closeModal();renderWidget();};
+}
+
+function stamp(){const d=TODAY;return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`;}
+function currentJSON(){return JSON.stringify(DB,null,2);}
+function refreshExportText(){const el=document.getElementById("exp-text");if(el)el.value=currentJSON();}
+async function copyBackup(){const txt=currentJSON();try{await navigator.clipboard.writeText(txt);msg("exp-msg","Sauvegarde copiée ✓",true);}
+  catch(e){const el=document.getElementById("exp-text");el.focus();el.select();try{document.execCommand("copy");msg("exp-msg","Sauvegarde copiée ✓",true);}catch(_){msg("exp-msg","Copie impossible — sélectionne le texte manuellement",false);}}}
+function downloadBackup(){const blob=new Blob([currentJSON()],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`petdot-sauvegarde-${stamp()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);msg("exp-msg","Fichier généré ✓",true);}
+async function shareBackup(){const fname=`petdot-sauvegarde-${stamp()}.json`;try{const file=new File([currentJSON()],fname,{type:"application/json"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Sauvegarde Pet·Dot"});return;}}catch(e){}
+  downloadBackup();}
+function applyImport(text,msgId,thenClose){try{const obj=JSON.parse(text);if(!obj||!Array.isArray(obj.pets))throw 0;
+  DB={__init:true,pets:obj.pets,widget:obj.widget||DEF_WIDGET()};
+  persist();renderAll();if(msgId)msg(msgId,"Données restaurées ✓",true);if(thenClose)hideOnb();return true;}
+  catch(e){if(msgId)msg(msgId,"Fichier invalide ✗",false);return false;}}
+function readFile(input,msgId,thenClose){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>applyImport(r.result,msgId,thenClose);r.readAsText(f);input.value="";}
+function msg(id,text,ok){const el=document.getElementById(id);if(!el)return;el.className=ok?"hintok":"hintko";el.textContent=text;}
+
+async function persist(){await Store.save(DB);}
+function renderAll(){renderWidget();renderPets();refreshExportText();}
+function markDone(petId,treatId){const p=DB.pets.find(x=>x.id===petId);if(!p)return;const t=p.treatments.find(x=>x.id===treatId);if(!t)return;
+  t.last=TODAY.toISOString().slice(0,10);persist();renderWidget();renderPets();
+  if(document.getElementById("detail-sheet").classList.contains("on"))renderDetail(p);}
+
+document.querySelectorAll("[data-nav]").forEach(b=>{b.onclick=()=>{document.querySelectorAll("[data-nav]").forEach(x=>x.classList.toggle("on",x===b));const v=b.dataset.nav;
+  document.getElementById("view-home").classList.toggle("hidden",v!=="home");
+  document.getElementById("view-pets").classList.toggle("hidden",v!=="pets");
+  document.getElementById("view-data").classList.toggle("hidden",v!=="data");
+  if(v==="data")refreshExportText();};});
+
+document.body.addEventListener("click",e=>{
+  const done=e.target.closest("[data-done]");if(done){const[pid,tid]=done.dataset.done.split(":");markDone(pid,tid);return;}
+  const petCard=e.target.closest("[data-pet]");if(petCard){openDetail(petCard.dataset.pet);return;}
+  if(e.target.closest("#add-pet-btn")){petForm(null);return;}
+  if(e.target.closest("#open-cfg")){widgetConfig();return;}
+  const at=e.target.closest("[data-add-treat]");if(at){treatForm(at.dataset.addTreat);return;}
+  const am=e.target.closest("[data-add-measure]");if(am){measureForm(am.dataset.addMeasure);return;}
+  const cm=e.target.closest("[data-cmode]");if(cm){CHART_MODE=cm.dataset.cmode;document.querySelectorAll("[data-cmode]").forEach(x=>x.classList.toggle("on",x.dataset.cmode===CHART_MODE));
+    const p=DB.pets.find(x=>x.id===document.querySelector("[data-add-measure]").dataset.addMeasure);document.getElementById("chart-slot").innerHTML=renderChart(p,CHART_MODE);document.getElementById("log-slot").innerHTML=renderLog(p,CHART_MODE);return;}
+  const td=e.target.closest("[data-tdone]");if(td){const pid=document.querySelector("[data-add-treat]").dataset.addTreat;markDone(pid,td.dataset.tdone);return;}
+  const tdel=e.target.closest("[data-tdel]");if(tdel){const pid=document.querySelector("[data-add-treat]").dataset.addTreat;const p=DB.pets.find(x=>x.id===pid);p.treatments=p.treatments.filter(t=>t.id!==tdel.dataset.tdel);persist();renderDetail(p);renderWidget();renderPets();return;}
+  const ep=e.target.closest("[data-edit-pet]");if(ep){petForm(DB.pets.find(x=>x.id===ep.dataset.editPet));return;}
+  const dp=e.target.closest("[data-del-pet]");if(dp){if(confirm("Supprimer définitivement cette fiche ?")){DB.pets=DB.pets.filter(x=>x.id!==dp.dataset.delPet);persist();closeDetail();renderPets();renderWidget();}return;}
+  if(e.target.closest("#det-close")){closeDetail();return;}
+  if(e.target===document.getElementById("detail-scrim")){closeDetail();return;}
+  if(e.target===document.getElementById("modal-scrim")){closeModal();return;}
+});
+
+document.getElementById("exp-copy").onclick=copyBackup;
+document.getElementById("exp-file").onclick=downloadBackup;
+document.getElementById("exp-share").onclick=shareBackup;
+document.getElementById("imp-file").onclick=()=>document.getElementById("imp-input").click();
+document.getElementById("imp-input").onchange=e=>readFile(e.target,"imp-msg",false);
+document.getElementById("imp-text-btn").onclick=()=>{document.getElementById("imp-text").classList.toggle("hidden");document.getElementById("imp-text-do").classList.toggle("hidden");};
+document.getElementById("imp-text-do").onclick=()=>applyImport(document.getElementById("imp-text").value,"imp-msg",false);
+
+function showOnb(){document.getElementById("onb").classList.add("on");}
+function hideOnb(){document.getElementById("onb").classList.remove("on");}
+document.getElementById("onb-new").onclick=async()=>{DB={__init:true,pets:[seedLoki()],widget:DEF_WIDGET()};await persist();renderAll();hideOnb();};
+document.getElementById("onb-import").onclick=()=>document.getElementById("onb-file").click();
+document.getElementById("onb-file").onchange=e=>readFile(e.target,"onb-msg",true);
+
+(async function init(){
+  document.getElementById("today-lbl").textContent=fmtShort(TODAY);
+  const loaded=await Store.load();
+  if(loaded&&loaded.__init){DB=loaded;if(!DB.widget)DB.widget=DEF_WIDGET();renderAll();}
+  else{renderAll();showOnb();}
+})();
+</script>
+</body>
+</html>
