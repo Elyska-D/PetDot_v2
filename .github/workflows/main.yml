@@ -28,24 +28,57 @@ jobs:
       - name: Ajouter la plateforme Android
         run: npx cap add android
 
-      - name: Générer l'icône (croix santé, style Nothing)
-        continue-on-error: true
-        run: |
-          mkdir -p assets
-          convert -size 1024x1024 xc:'#000000' -fill '#d61f26' \
-            -draw "roundrectangle 432,282 592,742 26,26" \
-            -draw "roundrectangle 282,432 742,592 26,26" \
-            assets/icon.png
-          convert -size 2732x2732 xc:'#000000' -fill '#d61f26' \
-            -draw "roundrectangle 1236,876 1496,1856 40,40" \
-            -draw "roundrectangle 876,1236 1856,1496 40,40" \
-            assets/splash.png
-          npx @capacitor/assets@3 generate --android \
-            --iconBackgroundColor '#000000' --iconBackgroundColorDark '#000000' \
-            --splashBackgroundColor '#000000' --splashBackgroundColorDark '#000000'
-
       - name: Synchroniser
         run: npx cap sync android
+
+      - name: Icône croix rouge (style Nothing)
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 - << 'PY'
+          from PIL import Image, ImageDraw
+          import os
+          RES = "android/app/src/main/res"
+          RED = (214, 31, 38, 255)
+          BLACK = (0, 0, 0, 255)
+          CLEAR = (0, 0, 0, 0)
+
+          def draw_cross(im, S, arm, thick):
+              d = ImageDraw.Draw(im)
+              c = S / 2.0
+              L = S * arm
+              t = S * thick / 2.0
+              r = int(S * 0.05)
+              d.rounded_rectangle([c - t, c - L, c + t, c + L], radius=r, fill=RED)
+              d.rounded_rectangle([c - L, c - t, c + L, c + t], radius=r, fill=RED)
+
+          legacy = {"mdpi":48,"hdpi":72,"xhdpi":96,"xxhdpi":144,"xxxhdpi":192}
+          fg     = {"mdpi":108,"hdpi":162,"xhdpi":216,"xxhdpi":324,"xxxhdpi":432}
+
+          for d, S in legacy.items():
+              folder = f"{RES}/mipmap-{d}"
+              os.makedirs(folder, exist_ok=True)
+              sq = Image.new("RGBA", (S, S), BLACK)
+              draw_cross(sq, S, 0.30, 0.17)
+              sq.save(f"{folder}/ic_launcher.png")
+              mask = Image.new("L", (S, S), 0)
+              ImageDraw.Draw(mask).ellipse([0, 0, S-1, S-1], fill=255)
+              rnd = Image.composite(sq, Image.new("RGBA", (S, S), CLEAR), mask)
+              rnd.save(f"{folder}/ic_launcher_round.png")
+
+          for d, S in fg.items():
+              folder = f"{RES}/mipmap-{d}"
+              os.makedirs(folder, exist_ok=True)
+              im = Image.new("RGBA", (S, S), CLEAR)
+              draw_cross(im, S, 0.28, 0.16)
+              im.save(f"{folder}/ic_launcher_foreground.png")
+
+          vals = f"{RES}/values"
+          os.makedirs(vals, exist_ok=True)
+          with open(f"{vals}/ic_launcher_background.xml", "w") as f:
+              f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#000000</color>\n</resources>\n')
+
+          print("Icone generee avec succes")
+          PY
 
       - name: Compiler l'APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
